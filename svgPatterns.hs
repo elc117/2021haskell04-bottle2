@@ -5,9 +5,7 @@ type Rect      = (Point,Float,Float)
 type Circle    = (Point,Float)
 
 
--------------------------------------------------------------------------------
 -- Paletas
--------------------------------------------------------------------------------
 
 -- Paleta (R, G, B) só com tons de verde "hard-coded" 
 -- (pode ser melhorado substituindo os valores literais por parâmetros)
@@ -22,10 +20,7 @@ rgbPalette :: Int -> [(Int,Int,Int)]
 rgbPalette n = take n $ cycle [(255,0,0),(0,255,0),(0,0,255)]
 
 
-
--------------------------------------------------------------------------------
 -- Geração de retângulos em suas posições
--------------------------------------------------------------------------------
 
 genRectsInLine :: Int -> [Rect]
 genRectsInLine n  = [((m*(w+gap), 0.0), w, h) | m <- [0..fromIntegral (n-1)]]
@@ -33,9 +28,7 @@ genRectsInLine n  = [((m*(w+gap), 0.0), w, h) | m <- [0..fromIntegral (n-1)]]
         gap = 10
 
 
--------------------------------------------------------------------------------
 -- Strings SVG
--------------------------------------------------------------------------------
 
 -- Gera string representando retângulo SVG 
 -- dadas coordenadas e dimensões do retângulo e uma string com atributos de estilo
@@ -43,13 +36,9 @@ svgRect :: Rect -> String -> String
 svgRect ((x,y),w,h) style = 
   printf "<rect x='%.3f' y='%.3f' width='%.2f' height='%.2f' style='%s' />\n" x y w h style
 
--- String inicial do SVG
-svgBegin :: Float -> Float -> String
-svgBegin w h = printf "<svg width='%.2f' height='%.2f' xmlns='http://www.w3.org/2000/svg'>\n" w h 
-
--- String final do SVG
-svgEnd :: String
-svgEnd = "</svg>"
+-- Wrapper do conteúdo em tags <svg></svg>
+svgBody :: Float -> Float -> String -> String
+svgBody = printf "<svg width='%.2f' height='%.2f' xmlns='http://www.w3.org/2000/svg'>\n%s</svg>\n"
 
 -- Gera string com atributos de estilo para uma dada cor
 -- Atributo mix-blend-mode permite misturar cores
@@ -61,19 +50,15 @@ svgStyle (r,g,b) = printf "fill:rgb(%d,%d,%d); mix-blend-mode: screen;" r g b
 svgElements :: (a -> String -> String) -> [a] -> [String] -> String
 svgElements func elements styles = concat $ zipWith func elements styles
 
--------------------------------------------------------------------------------
+
 -- Função principal que gera arquivo com imagem SVG
--------------------------------------------------------------------------------
 
 main :: IO ()
 main = do
-  writeFile "rects.svg" $ svgstrs
-  where svgstrs = svgBegin w h ++ svgfigs ++ svgEnd
+  writeFile "figs.svg" $ svgstrs
+  where svgstrs = svgBody w h svgfigs
         svgfigs = svgElements svgRect rects (map svgStyle palette)
-        rects = genRectsInLine nrects
-        palette = rgbPalette nrects
-        nrects = 10
-        (w,h) = (1500,500) -- width,height da imagem SVG
-
-
-
+        rects   = genRectsInLine nrects
+        palette = rgbPallete nrects
+        nrects  = 10
+        (w,h)   = (1500,500) -- width,height da imagem SVG
