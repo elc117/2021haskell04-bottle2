@@ -1,3 +1,5 @@
+-- mss middle-square sequence
+
 import Text.Printf
 
 type Point     = (Float,Float)
@@ -5,32 +7,38 @@ type Rect      = (Point,Float,Float)
 type Circle    = (Point,Float)
 
 
+-- Utilidades (talvez esteja reinventando a roda)
+
+skip 0 xs     = xs
+skip n (_:xs) = skip (n - 1) xs
+
+
 -- Sequências de números
 
 -- https://en.wikipedia.org/wiki/Middle-square_method
-middleSquareSequence :: (Integral a) => a -> a -> [a]
-middleSquareSequence n_digits number
+mss :: (Integral a) => a -> a -> [a]
+mss n_digits number
   | not (even n_digits) = error "n_digits must be even"
-  | otherwise           = (middleNumber : middleSquareSequence n_digits middleNumber)
+  | otherwise           = (middleNumber : mss n_digits middleNumber)
   where middleNumber = leftNumber - ((leftNumber `div` (10 ^ n_digits)) * (10 ^ n_digits))
         leftNumber   = (number ^ 2) `div` (10 ^ (n_digits `div` 2))
 
-quiteCoolSequence = middleSquareSequence 8 12345678
-
+distribute n cap = map (\x -> cap `div` n * x) [1..n]
 
 -- Paletas
 
--- Paleta (R, G, B) só com tons de verde "hard-coded" 
--- (pode ser melhorado substituindo os valores literais por parâmetros)
--- Além disso, o que acontecerá se n for muito grande ou negativo?
 greenPalette :: Int -> [(Int,Int,Int)]
-greenPalette n = [(0, 80+i*10, 0) | i <- [0..n] ]
+greenPalette n = [(0, tom, 0) | tom <- distribute n 255]
 
 -- Paleta com n valores retirados de uma lista com sequências de R, G e B 
 -- O '$' é uma facilidade sintática que substitui parênteses
 -- O cycle é uma função bacana -- procure saber mais sobre ela :-)
 rgbPalette :: Int -> [(Int,Int,Int)]
 rgbPalette n = take n $ cycle [(255,0,0),(0,255,0),(0,0,255)]
+
+genPalette :: (Integral a) => [a] -> [a] -> [a] -> [(a, a, a)]
+genPalette reds greens blues = zip3 (cap reds) (cap greens) (cap blues)
+  where cap = map (\color -> color `mod` 256)
 
 
 -- Geração de retângulos em suas posições
@@ -76,7 +84,8 @@ main = do
         svgfigs = svgElements svgRect rects (map svgStyle palette)
         rects   = genRectsInLine nrects
         --rects   = genRectsGrid x y
-        palette = rgbPalette nrects
+        palette = genPalette (mss 6 123456) (mss 6 654321) (mss 6 987654)
+        --palette = greenPalette nrects
         nrects  = 10
         --(x,y)   = (w `div` 50, h `div` 10)
         (w,h)   = (1500,500) -- width,height da imagem SVG
