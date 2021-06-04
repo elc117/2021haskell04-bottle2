@@ -5,6 +5,19 @@ type Rect      = (Point,Float,Float)
 type Circle    = (Point,Float)
 
 
+-- Sequências de números
+
+-- https://en.wikipedia.org/wiki/Middle-square_method
+middleSquareSequence :: (Integral a) => a -> a -> [a]
+middleSquareSequence n_digits number
+  | not (even n_digits) = error "n_digits must be even"
+  | otherwise           = (middleNumber : middleSquareSequence n_digits middleNumber)
+  where middleNumber = leftNumber - ((leftNumber `div` (10 ^ n_digits)) * (10 ^ n_digits))
+        leftNumber   = (number ^ 2) `div` (10 ^ (n_digits `div` 2))
+
+quiteCoolSequence = middleSquareSequence 8 12345678
+
+
 -- Paletas
 
 -- Paleta (R, G, B) só com tons de verde "hard-coded" 
@@ -24,8 +37,11 @@ rgbPalette n = take n $ cycle [(255,0,0),(0,255,0),(0,0,255)]
 
 genRectsInLine :: Int -> [Rect]
 genRectsInLine n  = [((m*(w+gap), 0.0), w, h) | m <- [0..fromIntegral (n-1)]]
-  where (w,h) = (50,50)
+  where (w,h) = (50,80)
         gap = 10
+
+--genRectsGrid :: Int -> Int -> [Rect]
+--genRectsGrid XXX continuar
 
 
 -- Strings SVG
@@ -59,6 +75,8 @@ main = do
   where svgstrs = svgBody w h svgfigs
         svgfigs = svgElements svgRect rects (map svgStyle palette)
         rects   = genRectsInLine nrects
-        palette = rgbPallete nrects
+        --rects   = genRectsGrid x y
+        palette = rgbPalette nrects
         nrects  = 10
+        --(x,y)   = (w `div` 50, h `div` 10)
         (w,h)   = (1500,500) -- width,height da imagem SVG
