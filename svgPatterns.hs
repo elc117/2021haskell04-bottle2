@@ -48,8 +48,10 @@ genRectsInLine n  = [((m*(w+gap), 0.0), w, h) | m <- [0..fromIntegral (n-1)]]
   where (w,h) = (50,80)
         gap = 10
 
---genRectsGrid :: Int -> Int -> [Rect]
---genRectsGrid XXX continuar
+--genRectsGrid :: (Integral a) => a -> a -> a -> a -> a -> [Rect]
+genRectsGrid x y w h gap = map (\((x, y), w, h) -> ((deviate x, deviate y), deviate w, deviate h)) base
+  where base      = [((x' * (w + gap), y' * (h + gap)), w, h) | x' <- [0..x], y' <- [0..y]]
+        deviate x = (x * ((fromIntegral (head (skip x (mss 10 8461095437)))) / (fromIntegral 10000000000)))
 
 
 -- Strings SVG
@@ -82,10 +84,9 @@ main = do
   writeFile "figs.svg" $ svgstrs
   where svgstrs = svgBody w h svgfigs
         svgfigs = svgElements svgRect rects (map svgStyle palette)
-        rects   = genRectsInLine nrects
-        --rects   = genRectsGrid x y
+        --rects   = genRectsInLine nrects
+        rects   = genRectsGrid 11 5 230 300 (-5)
         palette = genPalette (mss 6 123456) (mss 6 654321) (mss 6 987654)
         --palette = greenPalette nrects
         nrects  = 10
-        --(x,y)   = (w `div` 50, h `div` 10)
         (w,h)   = (1500,500) -- width,height da imagem SVG
